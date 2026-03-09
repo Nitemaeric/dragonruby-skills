@@ -25,6 +25,7 @@ npx skills add nitemaeric/dragonruby-skills/tree/main/skills/dragonruby-platform
 | `dragonruby-pathfinding` | A*, BFS, flow fields, flood fill, line-of-sight, spatial hashing, quad trees |
 | `dragonruby-ui` | Buttons, checkboxes, scroll views, menus, input remapping, tooltips, accessibility |
 | `dragonruby-platformer` | Physics, AABB collision, action state machines, variable jump, moving platforms, combo inputs |
+| `dragonruby-yard` | Solargraph LSP setup for IDE autocomplete and type support via YARD stubs |
 
 ## Manual install (symlink)
 
