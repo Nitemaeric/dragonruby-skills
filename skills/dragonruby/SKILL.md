@@ -35,6 +35,33 @@ mygame/
   logs/   # gitignore
 ```
 
+## .gitignore
+
+The DragonRuby engine binary is large and licensed per-developer — never commit it. Builds and runtime-generated directories should also be excluded.
+
+```gitignore
+# DragonRuby engine (download separately — do not commit)
+dragonruby
+dragonruby.exe
+DragonRuby\ GTK.app/
+
+# Runtime-generated directories
+tmp/
+logs/
+
+# Export builds (large platform-specific archives)
+builds/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Solargraph LSP config (optional — commit if whole team uses it)
+# .solargraph.yml
+```
+
+Place this file at the root of your project (the directory containing `mygame/`). The engine binary lives at the same level and must not be pushed to a public repo due to licensing.
+
 ## Core Loop & Lifecycle
 
 ```ruby

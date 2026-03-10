@@ -161,4 +161,4 @@ The stubs cover the full DragonRuby API surface:
 - Re-run `solargraph config` if you add new `require` paths or restructure your project.
 - If autocomplete stops working after a DragonRuby update, `git pull` the stubs repo — the community keeps them updated.
 - The stubs are for editor tooling only; they are never loaded by DragonRuby at runtime.
-- Add `.solargraph.yml` to `.gitignore` if team members use different editor setups, or commit it if everyone uses Solargraph.
+- Add `.solargraph.yml` to `.gitignore` if team members use different editor setups, or commit it if everyone uses Solargraph. See the `.gitignore` section in `/dragonruby` for a complete template.
