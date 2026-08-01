@@ -676,6 +676,44 @@ args.state.spawn_rate = (args.state.spawn_rate * 0.95).to_i.clamp(20, 300)
 val = @rng.rand(0...10)
 ```
 
+## mruby Runtime: What's Actually There
+
+DragonRuby's language runtime is [DragonRuby/mruby-patched](https://github.com/DragonRuby/mruby-patched)
+— mruby 3.0.0 plus DR's patches — built with mruby's `default` gembox. That
+gembox is the ground truth for what exists:
+
+**Included** (`stdlib` + `stdlib-ext` + `stdlib-io` + `math` + `metaprog` gemboxes):
+`Enumerator` (+ `lazy`), `Fiber`, `Struct`, `Time`, `Random`, `Comparable`/enum/string/
+numeric/array/hash/range/proc/symbol/object/kernel/class extension gems, `ObjectSpace`,
+`IO`/`File`/`Socket`, `pack`/`sprintf`, `Math`, `Rational`, `Complex`, `method`/`eval`
+metaprogramming.
+
+**Not in the gembox — these classes do not exist:**
+- `Regexp` (no `mruby-regexp` gem) — use `String#include?`/`split`/`start_with?` etc.
+- `Dir` (no `mruby-dir` gem) — use `$gtk` file APIs
+
+**mruby 3.0.0 core-language gaps** (crash at **runtime**, not load time — they
+slip through until the code path executes):
+
+```ruby
+(0..6).step(2) { }   # NoMethodError — use Array.new(count) { |i| i * spacing }
+[1, 2, 3].sum        # NoMethodError — use inject(0) { |acc, n| acc + n }
+defined?(foo)        # not supported — use respond_to? / explicit nil checks
+```
+
+- `send(name, *args, **kwargs)` with **empty** kwargs forwards a stray `{}` positional
+  to the callee, breaking zero-arg methods — guard delegation code with `kwargs.empty?`
+- Bare `module_function` (no arguments) does not toggle module-function mode — use `extend self`
+- `Fiber` is present but unreliable under the engine — prefer state machines / build-once queues
+
+**Engine-level, not in mruby-patched:** `1 / 2 == 0.5`. The float-division patch
+lives in the DR engine on top of the runtime — so a test harness built from
+mruby-patched (or plain Ruby) has integer division (`1 / 2 == 0`). Use `idiv`
+when you mean integers, `fdiv` when you mean floats, and don't let harness tests
+silently encode different math than the engine.
+
+- Keep asset paths lowercase snake_case — case-sensitive platforms (Linux, web builds) fail on mixed-case paths
+
 ## Performance Tips
 
 - Prefer Hash or class primitives over Array form in hot code paths
