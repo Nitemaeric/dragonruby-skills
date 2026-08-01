@@ -1,6 +1,6 @@
 # dragonruby-skills
 
-A collection of [Claude Code](https://claude.ai/claude-code) skills for building games with [DragonRuby GTK](https://dragonruby.org).
+A collection of [agent skills](https://www.skills.sh/) for building games with [DragonRuby GTK](https://dragonruby.org). Works with any agent that reads the SKILL.md format.
 
 ## Install
 
@@ -31,6 +31,7 @@ npx skills add nitemaeric/dragonruby-skills/tree/main/skills/dragonruby-platform
 
 ```sh
 git clone https://github.com/nitemaeric/dragonruby-skills
-ln -s $(pwd)/dragonruby-skills/skills/dragonruby ~/.claude/skills/dragonruby
+# link into your agent's skills directory, e.g. .claude/skills, .agents/skills:
+ln -s $(pwd)/dragonruby-skills/skills/dragonruby <skills-dir>/dragonruby
 # repeat for each skill you want
 ```
