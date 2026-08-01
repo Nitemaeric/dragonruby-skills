@@ -3,7 +3,7 @@ name: dragonruby-platformer
 description: Platformer game patterns in DragonRuby GTK — physics, gravity, jumping, AABB collision resolution, action state machines, sprite animation, moving platforms, combo inputs. Use when building platformers, action games, or side-scrollers.
 ---
 
-This skill covers platformer-specific patterns. For core DragonRuby API see the main `dragonruby` skill; for cameras/render targets see `/dragonruby-rendering`.
+This skill covers platformer-specific patterns. For core DragonRuby API see the main `dragonruby` skill; for render targets see `/dragonruby-rendering`.
 
 ## Physics Model
 

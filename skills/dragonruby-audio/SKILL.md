@@ -5,33 +5,9 @@ description: Advanced audio in DragonRuby GTK — spatial audio, procedural synt
 
 This skill covers advanced DragonRuby audio patterns. For basic sound playback see the main `dragonruby` skill.
 
-## Audio API Overview
-
-Audio is controlled via `args.audio` (a persistent hash) and `args.outputs.sounds` (fire-and-forget).
-
-```ruby
-# One-shot (auto-removed on completion)
-args.outputs.sounds << 'sounds/coin.wav'
-args.outputs.sounds << { path: 'sounds/hit.wav', gain: 0.5 }
-
-# Managed (persists, looping or controlled)
-args.audio[:music] = {
-  input: 'sounds/theme.ogg',
-  looping: true,
-  gain: 1.0,
-  pitch: 1.0,    # 1.0 = normal speed
-  paused: false,
-}
-args.audio.delete(:music)   # stop
-
-# After loading:
-args.audio[:music].playtime    # seconds elapsed
-args.audio[:music].playlength  # total duration
-
-args.audio.volume = 0.8   # global volume multiplier
-```
-
-Supported formats: `.wav`, `.ogg`. Resample to 44.1kHz max via ffmpeg.
+The `args.audio` / `args.outputs.sounds` API surface lives in the main
+`dragonruby` skill's Audio section — one home per topic. This skill starts
+where that API ends.
 
 ## Spatial Audio
 

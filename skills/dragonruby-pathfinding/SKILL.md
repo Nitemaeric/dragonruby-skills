@@ -292,19 +292,6 @@ wall_list.each { |w| walls[[w[:x], w[:y]]] = true }
 blocked = walls[[nx, ny]]
 ```
 
-## Quadtree (Built-in)
-
-For large numbers of entities, use DragonRuby's built-in quadtree:
-
-```ruby
-# Build once per tick (or only on change):
-args.state.qt = Geometry.create_quad_tree(args.state.enemies)
-
-# Query:
-near = Geometry.find_all_intersect_rect_quad_tree(player_rect, args.state.qt)
-first = Geometry.find_intersect_rect_quad_tree(player_rect, args.state.qt)
-```
-
 ## Heat-Seeking Projectile
 
 Bullets that always track to the current position of their target (passed by reference):
