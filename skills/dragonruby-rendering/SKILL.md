@@ -1,6 +1,6 @@
 ---
 name: dragonruby-rendering
-description: Advanced DragonRuby GTK rendering — render targets, cameras with world/screen space, pixel arrays, HD/lowrez resolution, thick lines, blendmodes, viewport culling, tiling textures. Use when the user asks about advanced visual effects, camera systems, or rendering performance.
+description: Advanced DragonRuby GTK rendering — render targets, pixel arrays, HD/lowrez resolution, thick lines, blendmodes, tiling textures. Use when the user asks about advanced visual effects or rendering performance.
 ---
 
 This skill covers advanced rendering patterns in DragonRuby GTK. For basic sprite/label/solid output see the main `dragonruby` skill.
@@ -67,108 +67,6 @@ args.outputs.sprites << {
   path: :clipped,
   source_x: clip_x, source_y: clip_y,
   source_w: clip_w, source_h: clip_h
-}
-```
-
-## Camera Systems
-
-### Simple follow camera
-
-```ruby
-# Camera state
-args.state.camera ||= { x: 0, y: 0, scale: 1.0 }
-
-# Smooth follow
-args.state.camera.x = args.state.camera.x.lerp(player.x - 640, 0.08)
-args.state.camera.y = args.state.camera.y.lerp(player.y - 360, 0.08)
-
-# Apply camera to all world entities:
-def world_to_screen(camera, rect)
-  { **rect,
-    x: rect.x - camera.x,
-    y: rect.y - camera.y }
-end
-```
-
-### Scalable camera (zoom + pan)
-
-```ruby
-VIEWPORT_W = 1280
-VIEWPORT_H = 720
-
-def to_screen_space(camera, rect)
-  {
-    **rect,
-    x: rect[:x] * camera[:scale] - camera[:x] * camera[:scale] + VIEWPORT_W / 2,
-    y: rect[:y] * camera[:scale] - camera[:y] * camera[:scale] + VIEWPORT_H / 2,
-    w: rect[:w] * camera[:scale],
-    h: rect[:h] * camera[:scale]
-  }
-end
-
-def to_world_space(camera, rect)
-  {
-    x: (rect[:x] - VIEWPORT_W / 2 + camera[:x] * camera[:scale]) / camera[:scale],
-    y: (rect[:y] - VIEWPORT_H / 2 + camera[:y] * camera[:scale]) / camera[:scale]
-  }
-end
-
-# Usage:
-args.outputs.sprites << world_entities.map { |e| to_screen_space(args.state.camera, e) }
-```
-
-### Viewport culling (only render visible entities)
-
-```ruby
-viewport = {
-  x: camera.x - 640 / camera.scale,
-  y: camera.y - 360 / camera.scale,
-  w: 1280 / camera.scale,
-  h: 720 / camera.scale
-}
-
-visible = Geometry.find_all_intersect_rect(viewport, args.state.world_entities)
-args.outputs.sprites << visible.map { |e| to_screen_space(camera, e) }
-```
-
-### Camera shake (trauma system)
-
-```ruby
-args.state.trauma ||= 0.0
-args.state.trauma = (args.state.trauma + 0.3).clamp(0, 1)  # on hit
-
-# Apply shake:
-shake = 20.0 * args.state.trauma ** 2
-args.state.camera.x_offset = shake.randomize(:ratio, :sign)
-args.state.camera.y_offset = shake.randomize(:ratio, :sign)
-args.state.trauma *= 0.93   # decay
-```
-
-### Z-targeting / orbit camera
-
-```ruby
-args.state.camera.angle ||= 0
-distance = 200
-target_x = entity.x + args.state.camera.angle.vector_x * distance
-target_y = entity.y + args.state.camera.angle.vector_y * distance
-args.state.camera.angle += 1   # orbit
-```
-
-### Render target + camera (full pipeline)
-
-```ruby
-# Draw world to a render target using camera offset:
-args.outputs[:scene].transient!
-args.outputs[:scene].width  = 1280
-args.outputs[:scene].height = 720
-args.outputs[:scene].sprites << visible_tiles.map { |t|
-  t.merge(x: t.x - cam.x, y: t.y - cam.y)
-}
-
-# Blit scene + apply shake:
-args.outputs.sprites << {
-  x: cam.x_offset.to_i, y: cam.y_offset.to_i,
-  w: 1280, h: 720, path: :scene
 }
 ```
 

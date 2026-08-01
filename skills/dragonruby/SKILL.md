@@ -8,12 +8,12 @@ This skill guides writing idiomatic, performant DragonRuby GTK (DRGTK) game code
 ## Sub-skills
 
 For specialised topics, use these companion skills:
-- `/dragonruby-rendering` — render targets, cameras, HD/lowrez, pixel arrays, advanced sprites
+- `/dragonruby-rendering` — render targets, HD/lowrez, pixel arrays, advanced sprites
 - `/dragonruby-audio` — spatial audio, procedural synthesis, beat sync, crossfading
 - `/dragonruby-3d` — 3D rendering, raycasting, Mode7, matrix math, VR
 - `/dragonruby-pathfinding` — A*, BFS, flood fill, quadtrees, spatial queries
 - `/dragonruby-ui` — UI controls, menus, scroll views, accessibility, input remapping
-- `/dragonruby-platformer` — platformer physics, action states, cameras, level editors
+- `/dragonruby-platformer` — platformer physics, action states, level editors
 
 ## Project Structure
 
@@ -299,35 +299,6 @@ args.inputs.finger_left.x
 args.inputs.finger_right.x
 ```
 
-## Scene Management
-
-```ruby
-def tick(args)
-  args.state.scene ||= :title
-
-  case args.state.scene
-  when :title then tick_title(args)
-  when :game  then tick_game(args)
-  when :over  then tick_over(args)
-  end
-
-  # Apply queued scene changes atomically at end of tick
-  if args.state.next_scene
-    args.state.scene = args.state.next_scene
-    args.state.next_scene = nil
-  end
-end
-```
-
-Never set `args.state.scene` directly mid-tick; always use `next_scene`.
-
-For fade transitions:
-```ruby
-args.state.scene_at ||= Kernel.tick_count
-a = 255 - (255 * args.state.scene_at.ease(30, :flip))
-args.outputs.solids << { x: 0, y: 0, w: 1280, h: 720, r: 0, g: 0, b: 0, a: a }
-```
-
 ## Geometry
 
 All methods via `Geometry.*` or `args.geometry.*`.
@@ -577,103 +548,6 @@ tick.frame_index(frame_count: 4, hold_each_frame_for: 8, repeat: true)
 val.randomize(:ratio)        # random 0..val
 val.randomize(:ratio, :sign) # random -val..val
 (-1..1).rand                 # random float in range
-```
-
-## Common Patterns
-
-### Spawn on interval
-```ruby
-if Kernel.tick_count.zmod?(120)   # every 2 seconds
-  args.state.enemies << { x: 1280, y: rand(720), w: 16, h: 16, hp: 3 }
-end
-```
-
-### Remove dead entities
-```ruby
-args.state.enemies.reject! { |e| e[:hp] <= 0 || e[:x] < -32 }
-```
-
-### Collision response
-```ruby
-args.state.enemies.each do |e|
-  next unless Geometry.intersect_rect?(args.state.player, e)
-  e[:hp] -= 1
-  # push-back:
-  angle = Geometry.angle(e, args.state.player)
-  e[:x] += angle.vector_x * 3
-  e[:y] += angle.vector_y * 3
-end
-```
-
-### Snap to grid
-```ruby
-grid_x = mouse_x.idiv(32) * 32
-grid_y = mouse_y.idiv(32) * 32
-```
-
-### Screen center
-```ruby
-cx = args.grid.w / 2   # 640
-cy = args.grid.h / 2   # 360
-```
-
-### Smooth camera follow
-```ruby
-args.state.cam_x = args.state.cam_x.lerp(player.x - 640, 0.08)
-args.state.cam_y = args.state.cam_y.lerp(player.y - 360, 0.08)
-```
-
-### Camera shake (trauma-based)
-```ruby
-args.state.trauma = (args.state.trauma + 0.3).clamp(0, 1)
-offset = 20.0 * args.state.trauma ** 2
-cam.x_off = offset.randomize(:ratio, :sign)
-cam.y_off = offset.randomize(:ratio, :sign)
-args.state.trauma *= 0.92   # decay each tick
-```
-
-### Timed flash effect
-```ruby
-args.state.flash_at ||= -999
-args.state.flash_at = Kernel.tick_count if hit
-if args.state.flash_at.elapsed_time < 30
-  a = 255 * args.state.flash_at.ease(30, :flip)
-  args.outputs.solids << { x: 0, y: 0, w: 1280, h: 720, r: 255, g: 255, b: 255, a: a }
-end
-```
-
-### Floating damage numbers
-```ruby
-args.state.floaters ||= []
-args.state.floaters << { x: e.x, y: e.y, text: "-#{dmg}", a: 255, dy: 2 }
-args.state.floaters.each { |f| f.y += f.dy; f.a -= 5 }
-args.state.floaters.reject! { |f| f.a <= 0 }
-args.outputs.labels << args.state.floaters.map { |f| f.merge(r: 255, g: 0, b: 0) }
-```
-
-### Frame animation (sprite sheet)
-```ruby
-col = args.state.anim_start.frame_index(frame_count: 6, hold_each_frame_for: 5, repeat: true)
-args.outputs.sprites << { x: p.x, y: p.y, w: 32, h: 32,
-                           path: 'sprites/run.png',
-                           source_x: col * 32, source_y: 0, source_w: 32, source_h: 32 }
-```
-
-### Directional sprite flipping
-```ruby
-path: "sprites/hero.png",
-flip_horizontally: player.dx < 0
-```
-
-### Wave difficulty scaling
-```ruby
-args.state.spawn_rate = (args.state.spawn_rate * 0.95).to_i.clamp(20, 300)
-```
-
-### Seeded RNG for reproducibility
-```ruby
-@rng = Random.new(seed)
-val = @rng.rand(0...10)
 ```
 
 ## mruby Runtime: What's Actually There
