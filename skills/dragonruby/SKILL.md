@@ -676,6 +676,25 @@ args.state.spawn_rate = (args.state.spawn_rate * 0.95).to_i.clamp(20, 300)
 val = @rng.rand(0...10)
 ```
 
+## mruby Limitations
+
+DragonRuby runs a patched mruby, not CRuby. These crash or misbehave at
+**runtime** (not load time), so they slip through until the code path executes:
+
+```ruby
+(0..6).step(2) { }   # NoMethodError — use Array.new(count) { |i| i * spacing }
+[1, 2, 3].sum        # NoMethodError — use inject(0) { |acc, n| acc + n }
+defined?(foo)        # not supported — use respond_to? / explicit nil checks
+1 / 2                # == 0.5 — DR patches Integer#/ to float division; use idiv for integers
+```
+
+- `send(name, *args, **kwargs)` with **empty** kwargs forwards a stray `{}` positional
+  to the callee, breaking zero-arg methods — guard delegation code with `kwargs.empty?`
+- Bare `module_function` (no arguments) does not toggle module-function mode — use `extend self`
+- Keep asset paths lowercase snake_case — case-sensitive platforms (Linux, web builds) fail on mixed-case paths
+- Test harnesses running plain Ruby or stock mruby do NOT have DR's division patch
+  (`1 / 2` is `0` there) — don't let tests silently encode different math than the engine
+
 ## Performance Tips
 
 - Prefer Hash or class primitives over Array form in hot code paths
